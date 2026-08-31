@@ -1,0 +1,54 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+<Layout title="BreachLab · Dashboard">
+  <h1>Mis notas</h1>
+  <div class="grid">
+    <div class="card">
+      <h2>Nueva nota</h2>
+      <label>Título</label>
+      <input id="t" placeholder="Título" />
+      <label>Contenido</label>
+      <textarea id="c" placeholder="Prueba XSS: <img src=x onerror=alert(document.cookie)>"></textarea>
+      <div style="margin-top:1rem"><button class="btn" id="save">Guardar nota</button></div>
+      <div id="msg"></div>
+    </div>
+    <div class="card">
+      <h2>Todas las notas</h2>
+      <ul class="notes" id="list"></ul>
+    </div>
+  </div>
+
+  <script>
+    import { api, link, requireLogin, esc } from '../lib/client.js';
+
+    await requireLogin();
+
+    async function load() {
+      const { data } = await api('/notes');
+      const ul = document.getElementById('list');
+      ul.innerHTML = '';
+      (data?.notes || []).forEach((n) => {
+        const li = document.createElement('li');
+        // El titulo se muestra de forma segura (texto); el contenido con posible
+        // XSS se pinta en la pagina de la nota, no aqui.
+        li.innerHTML = `<a href="${link('/note')}${link('/note').includes('?') ? '&' : '?'}id=${n.id}">${esc(n.title)}</a>`
+                     + `<span class="pill">owner ${n.owner_id}</span>`;
+        ul.appendChild(li);
+      });
+    }
+
+    document.getElementById('save').addEventListener('click', async () => {
+      const title = document.getElementById('t').value;
+      const content = document.getElementById('c').value;
+      await api('/notes', { method: 'POST', body: JSON.stringify({ title, content }) });
+      document.getElementById('t').value = '';
+      document.getElementById('c').value = '';
+      const msg = document.getElementById('msg');
+      msg.className = 'msg ok'; msg.textContent = 'Nota guardada.';
+      load();
+    });
+
+    load();
+  </script>
+</Layout>

@@ -1,0 +1,10 @@
+  tfm-api:
+    build: ./tfm-lab/backend
+    expose: ["5000"]
+    networks: [lab]
+
+  tfm-web:
+    build: ./tfm-lab/frontend
+    ports: ["8080:80"]
+    depends_on: [tfm-api]
+    networks: [lab]

@@ -1,0 +1,55 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+<Layout title="BreachLab · Entrar">
+  <h1>Laboratorio de vulnerabilidades web</h1>
+  <div class="grid">
+    <div class="card">
+      <h2>Iniciar sesión</h2>
+      <label>Usuario</label>
+      <input id="u" autocomplete="off" placeholder="usuario" />
+      <label>Contraseña</label>
+      <input id="p" type="password" placeholder="contraseña" />
+      <div style="margin-top:1rem"><button class="btn" id="go">Entrar</button></div>
+      <div id="msg"></div>
+    </div>
+    <div class="card">
+      <h2>Cómo usar el laboratorio</h2>
+      <p class="hint">Usuarios de prueba:</p>
+      <ul class="hint">
+        <li><code>admin / Admin123!</code> (rol admin)</li>
+        <li><code>marina / contraSegura</code> (rol user)</li>
+        <li><code>pablo / qwerty</code> (rol user)</li>
+      </ul>
+      <p class="hint">Añade <code>?safe=1</code> a la URL de cualquier página para
+      ejecutar el camino <b>seguro</b> (front y back). El badge de arriba indica el modo.</p>
+      <p class="hint"><a id="reset" href="#">Reiniciar base de datos</a> para capturas limpias.</p>
+    </div>
+  </div>
+
+  <script>
+    import { api, link } from '../lib/client.js';
+
+    const msg = document.getElementById('msg');
+    document.getElementById('go').addEventListener('click', async () => {
+      const username = document.getElementById('u').value;
+      const password = document.getElementById('p').value;
+      const { status, data } = await api('/login', {
+        method: 'POST', body: JSON.stringify({ username, password }),
+      });
+      if (status === 200 && data && data.ok) {
+        location.href = link('/dashboard');
+      } else {
+        msg.className = 'msg err';
+        msg.textContent = (data && data.error) || 'Error de login';
+      }
+    });
+
+    document.getElementById('reset').addEventListener('click', async (e) => {
+      e.preventDefault();
+      await api('/reset');
+      msg.className = 'msg ok';
+      msg.textContent = 'Base de datos reiniciada.';
+    });
+  </script>
+</Layout>

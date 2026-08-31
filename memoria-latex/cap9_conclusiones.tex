@@ -1,0 +1,132 @@
+\chapter{Conclusiones y propuestas}
+\label{cap:conclusiones}
+
+Este último capítulo recoge las conclusiones extraídas del trabajo,
+valorando el grado de cumplimiento de los objetivos planteados en el
+apartado~\ref{sec:objetivos}, y propone líneas de ampliación futuras del laboratorio.
+
+\section{Conclusiones}
+
+A continuación se retoma cada uno de los objetivos específicos planteados
+en el apartado~\ref{sec:objetivos}, valorando su grado de cumplimiento a la vista del
+trabajo realizado:
+
+\begin{itemize}
+\item \textbf{Estudiar una metodología de referencia existente en el ámbito
+  de la seguridad de aplicaciones web (OWASP WSTG).} Cumplido en el
+  capítulo~\ref{cap:marco-teorico}, donde se analiza la estructura, fases y
+  catálogo de pruebas de la WSTG y se justifica su elección frente a otros
+  marcos como PTES, OSSTMM o NIST~SP~800-115.
+\item \textbf{Diseñar un entorno web vulnerable controlado.} Cumplido con el
+  diseño e implementación de \breachlab, descrito en el
+  capítulo~\ref{cap:diseno}, incluido su despliegue reproducible mediante
+  Docker Compose.
+\item \textbf{Derivar, a partir de la metodología estudiada, una
+  metodología propia orientada a la agilidad.} Cumplido en el
+  capítulo~\ref{cap:metodologia}, acotando el alcance de la WSTG a un
+  subconjunto de seis pruebas alineadas con el OWASP Top~10 y consolidando
+  sus fases en un ciclo único de seis pasos, pensado para equipos con
+  recursos limitados.
+\item \textbf{Identificar vulnerabilidades siguiendo dicha metodología
+  propia.} Cumplido: cada apartado del capítulo~\ref{cap:explotacion}
+  localiza la vulnerabilidad en una línea de código concreta antes de
+  explotarla, siguiendo el proceso del capítulo~\ref{cap:metodologia}.
+\item \textbf{Explotar las vulnerabilidades de forma controlada.} Cumplido
+  en un entorno aislado, sin exposición a Internet, con usuarios y datos
+  ficticios, y con evidencia registrada de cada explotación en
+  \texttt{backend/logs/attacks.log}.
+\item \textbf{Analizar el impacto técnico y funcional de cada
+  vulnerabilidad.} Cumplido mediante la valoración CVSS v3.1 de cada
+  vulnerabilidad (capítulo~\ref{cap:explotacion}) y, de forma adicional a lo
+  previsto inicialmente, mediante el caso de estudio encadenado del
+  capítulo~\ref{cap:caso-estudio}, que muestra cómo ese impacto se
+  amplifica cuando varias vulnerabilidades se combinan.
+\item \textbf{Comparar los resultados y el esfuerzo de la metodología
+  propia frente a la metodología de referencia.} Cumplido en el
+  capítulo~\ref{cap:comparativa}, que contrasta la cobertura y el esfuerzo
+  estimado de la metodología propia frente a la OWASP WSTG completa, y
+  complementa la comparación situando \breachlab frente a DVWA y OWASP
+  Juice Shop. Esta comparación de esfuerzo es cualitativa y no una medición
+  cronometrada (apartado~\ref{sec:comparativa-metodologica}), lo que se
+  recoge como limitación del trabajo y como línea futura.
+\end{itemize}
+
+\section{Recomendaciones de mitigación}
+
+A modo de síntesis práctica orientada a quien despliegue una aplicación
+similar en producción, la tabla~\ref{tab:mitigaciones} recoge, para cada
+vulnerabilidad tratada, la recomendación principal aplicada en la rama
+segura de \breachlab y la \emph{cheat sheet} de la OWASP Foundation
+correspondiente.
+
+\begin{table}[htbp]
+  \centering
+  \small
+  \begin{tabular}{lp{6.2cm}l}
+    \toprule
+    \tabhead{Vulnerabilidad} & \tabhead{Recomendación principal} & \tabhead{Referencia} \\
+    \midrule
+    Inyección SQL &
+      Usar siempre consultas parametrizadas, nunca concatenar entrada de usuario &
+      \citelink{OWASPCS-SQLi} \\
+    XSS (DOM) &
+      Insertar datos no confiables como texto (\texttt{textContent}), nunca como HTML, y aplicar CSP &
+      \citelink{OWASPCS-XSS} \\
+    CSRF &
+      Token impredecible ligado a la sesión, verificado en el servidor antes de cambios de estado &
+      \citelink{OWASPCS-CSRF} \\
+    Fallos de autenticación &
+      Hash de contraseñas, bloqueo tras varios intentos fallidos y mensajes de error genéricos &
+      \citelink{OWASPCS-AUTH} \\
+    IDOR &
+      Verificar la propiedad del recurso (o el rol) en el servidor en cada acceso, nunca confiar en el identificador recibido &
+      \citelink{OWASPCS-AUTHZ} \\
+    Configuración insegura &
+      Cabeceras de hardening (CSP, \texttt{X-Frame-Options}, \texttt{X-Content-Type-Options}) activas por defecto &
+      \citelink{OWASPCS-HEADERS} \\
+    \bottomrule
+  \end{tabular}
+  \caption{Recomendaciones de mitigación aplicadas en \breachlab, con la
+    \emph{cheat sheet} de la OWASP Foundation correspondiente a cada una.}
+  \label{tab:mitigaciones}
+\end{table}
+
+\section{Trabajo futuro y posibles ampliaciones}
+\label{sec:trabajo-futuro}
+
+Para cerrar este último capítulo, se recogen algunas
+propuestas que podrían añadirse al trabajo actual en el futuro:
+
+\begin{itemize}
+\item Medir de forma cuantitativa (tiempo de aplicación, número de hallazgos
+  por hora) la diferencia de esfuerzo entre la metodología propia y la
+  OWASP WSTG completa, aplicando ambas sobre \breachlab y sobre algún
+  entorno externo adicional, para sustituir la estimación cualitativa del
+  apartado~\ref{sec:comparativa-metodologica} por datos medidos.
+\item Ampliar la cobertura de vulnerabilidades de \breachlab a otras
+  categorías del OWASP Top~10 no tratadas en este trabajo, como
+  deserialización insegura, SSRF o componentes con vulnerabilidades
+  conocidas.
+\item Añadir variantes adicionales de las vulnerabilidades ya existentes:
+  una inyección SQL ciega basada en tiempo en un buscador de notas, y un XSS
+  reflejado además del XSS basado en DOM ya implementado.
+\item Sustituir los identificadores secuenciales de las notas por
+  identificadores UUID no predecibles, para discutir en qué medida esto
+  mitiga el IDOR frente a una comprobación real de propiedad.
+\item Automatizar la comparativa del capítulo~\ref{cap:comparativa} mediante
+  un escaneo DAST (por ejemplo, OWASP ZAP \emph{baseline}) contra el modo
+  vulnerable y el modo \texttt{?safe=1}, incorporando sus resultados como
+  tabla objetiva.
+\item Incorporar autenticación multifactor y políticas de expiración y
+  rotación de sesión como contramedida adicional frente a la cadena de
+  ataque descrita en el capítulo~\ref{cap:caso-estudio}.
+\item Persistir el contador de intentos fallidos de \verb|login()|
+  (actualmente en memoria del proceso y por nombre de usuario) en un
+  almacén compartido, de forma que sobreviva a un reinicio del backend y
+  permita además detectar fuerza bruta distribuida por dirección IP.
+\item Registrar también en \texttt{attacks.log} el propio bloqueo temporal
+  (HTTP 429) del apartado~\ref{sec:auth}, que actualmente solo queda
+  reflejado en el log de acceso HTTP de Werkzeug y no mediante
+  \verb|log_event()|, a diferencia del resto de eventos de seguridad de la
+  aplicación.
+\end{itemize}

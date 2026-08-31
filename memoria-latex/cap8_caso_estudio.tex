@@ -1,0 +1,101 @@
+\chapter{Caso de estudio}
+\label{cap:caso-estudio}
+
+Las vulnerabilidades del capítulo~\ref{cap:explotacion} se han analizado
+hasta ahora de forma individual. Sin embargo, en un incidente real, un atacante rara vez se
+detiene tras explotar un único fallo: encadena varios, cada uno de
+severidad moderada por separado, hasta alcanzar un compromiso total del
+sistema. Este patrón de encadenar técnicas individuales hasta lograr un
+objetivo (persistencia, movimiento lateral, exfiltración) es precisamente el
+que describen catálogos de referencia como MITRE ATT\&CK~\citelib{ATTACK},
+aunque este capítulo se limita a un encadenamiento simplificado y no a un
+mapeo formal a dichas tácticas y técnicas. Este capítulo reproduce, sobre
+\breachlab en modo vulnerable, un
+escenario de ataque \emph{end-to-end} que combina cuatro de las seis
+vulnerabilidades analizadas.
+
+El escenario parte de un atacante sin ninguna credencial válida y termina
+con el control de dos cuentas de usuario distintas, ilustrando cómo la
+severidad acumulada de la cadena supera claramente la de cualquiera de sus
+eslabones individuales.
+
+\section{Cadena de explotación}
+
+\begin{figure}[htbp]
+  \centering
+  \begin{tikzpicture}[
+      node distance=7mm,
+      stepbox/.style={draw, rounded corners, fill=gray!8, minimum width=11.2cm,
+        minimum height=9mm, align=left, font=\small, inner sep=3mm},
+      arr/.style={-{Latex[length=2mm]}}
+    ]
+    \node[stepbox] (s1) {\textbf{1. Enumeración} — distingue usuarios válidos por el mensaje de error};
+    \node[stepbox, below=of s1] (s2) {\textbf{2. Fuerza bruta} — obtiene la contraseña de \texttt{pablo} (\texttt{qwerty})};
+    \node[stepbox, below=of s2] (s3) {\textbf{3. XSS} — roba la cookie de sesión de \texttt{marina}};
+    \node[stepbox, below=of s3] (s4) {\textbf{4. IDOR} — lee notas ajenas con la sesión robada};
+    \node[stepbox, below=of s4] (s5) {\textbf{5. CSRF} — sobrescribe la contraseña de \texttt{marina} (persistencia)};
+
+    \draw[arr] (s1) -- (s2);
+    \draw[arr] (s2) -- (s3);
+    \draw[arr] (s3) -- (s4);
+    \draw[arr] (s4) -- (s5);
+  \end{tikzpicture}
+  \caption{Cadena de explotación completa, de la enumeración inicial sin
+    credenciales al control persistente de dos cuentas.}
+  \label{fig:cadena}
+\end{figure}
+
+La figura~\ref{fig:cadena} resume los cinco pasos de la cadena,
+detallados a continuación:
+
+\begin{enumerate}
+\item \textbf{Enumeración de usuarios (\S\ref{sec:auth}):} probando nombres de usuario
+  habituales contra \texttt{POST /api/login}, el atacante distingue por el
+  mensaje de error qué cuentas existen (\texttt{pablo}, \texttt{marina},
+  \texttt{admin}) sin necesidad de acertar ninguna contraseña.
+\item \textbf{Toma de la cuenta de \texttt{pablo} (\S\ref{sec:auth}, fuerza bruta):} al
+  no existir límite de intentos, un diccionario básico de contraseñas
+  comunes revela que la contraseña de \texttt{pablo} es \texttt{qwerty} en
+  el primer intento significativo.
+\item \textbf{Robo de la sesión de \texttt{marina} (\S\ref{sec:xss}, XSS):} autenticado
+  ya como \texttt{pablo}, el atacante crea una nota con el payload
+  \verb|<img src=x onerror="alert(document.cookie)">| y, mediante
+  ingeniería social, convence a \texttt{marina} de que abra dicha nota (por
+  ejemplo, indicando que contiene información relevante); al no ser la
+  cookie \texttt{HttpOnly}, el atacante obtiene el identificador de sesión
+  de \texttt{marina}.
+\item \textbf{Acceso a información ajena mediante IDOR (\S\ref{sec:idor}):} utilizando la
+  sesión de \texttt{marina}, el atacante solicita notas de otros usuarios
+  cambiando el identificador en \texttt{/api/notes/<id>}, obteniendo datos
+  que ni siquiera \texttt{marina} debería poder ver de otros usuarios.
+\item \textbf{Persistencia mediante CSRF (\S\ref{sec:csrf}):} por último, el atacante
+  aloja \texttt{csrf\_poc.html} en un sitio externo; si consigue que la
+  propia víctima \texttt{marina} (con sesión ya activa tras el paso
+  anterior) lo visite, su contraseña se sobrescribe sin su consentimiento,
+  garantizando al atacante acceso persistente a la cuenta incluso si la
+  sesión robada expira.
+\end{enumerate}
+
+\section{Impacto acumulado}
+
+De forma individual, la vulnerabilidad de partida (5.4, fallos de
+autenticación) se valoró como severidad media (5.3). Sin embargo, la cadena
+completa permite a un atacante externo, sin credenciales iniciales, terminar
+con control persistente sobre dos cuentas y acceso de lectura a los datos de
+todos los usuarios del sistema, un resultado equiparable en impacto al de la
+vulnerabilidad más crítica del capítulo~\ref{cap:explotacion} (la inyección
+SQL, 9.1). Esta
+discrepancia entre la severidad de cada eslabón por separado y la del ataque
+completo es el argumento principal para no evaluar nunca una
+vulnerabilidad de forma aislada del resto del sistema.
+
+\section{Efecto de las contramedidas}
+
+Repitiendo la cadena con \texttt{?safe=1} en todos los endpoints, el ataque
+se rompe ya en el segundo eslabón: el mensaje deja de permitir enumerar
+usuarios y, aunque se conociera un usuario válido, la cuenta se bloquearía
+tras 5 intentos. Aun logrando autenticarse por otra vía, el XSS se
+neutraliza al renderizarse como texto plano, el acceso a notas ajenas se
+rechaza con 403 y la petición CSRF se rechaza sin un token válido. La
+cadena ilustra así el valor de la defensa en profundidad: basta con
+corregir un solo eslabón para detener el ataque.

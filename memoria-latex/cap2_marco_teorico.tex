@@ -1,0 +1,147 @@
+\chapter{Marco teórico y estado del arte}
+\label{cap:marco-teorico}
+
+En este capítulo se presenta el estado del arte sobre el que se apoya el
+resto del trabajo. Se aborda el catálogo de riesgos OWASP Top 10, las metodologías
+habituales de seguridad ofensiva --- en particular la OWASP Web Security
+Testing Guide, tomada como metodología de referencia a partir de la cual se
+derivará en el capítulo~\ref{cap:metodologia} una metodología propia más
+ágil --- y el estándar de puntuación de severidad
+CVSS v3.1, el cual será empleado en el capítulo~\ref{cap:explotacion} para valorar cada
+una de las vulnerabilidades explotadas.
+
+\section{OWASP Top 10 y vulnerabilidades web comunes}
+
+El OWASP Top 10~\citelib{OWASP21} es el catálogo de referencia del sector para
+clasificar los riesgos de seguridad más críticos en aplicaciones web,
+elaborado y actualizado periódicamente por la OWASP Foundation a partir de
+datos proporcionados por organizaciones y profesionales de todo el mundo. Las seis
+vulnerabilidades reproducidas en \breachlab corresponden a categorías de la
+edición 2021 de este catálogo:
+
+\begin{description}
+\item[Inyección (A03).] Ocurre cuando datos no confiables se envían a
+  un intérprete (SQL, sistema operativo, LDAP, etc.) como parte de un
+  comando o consulta, con el objetivo de alterar su lógica original. El caso
+  analizado dentro de \breachlab es una inyección SQL clásica en una consulta 
+  de autenticación (CWE-89).
+
+\item[Cross-Site Scripting — XSS (A03).] Permite a un atacante inyectar
+  script en páginas vistas por otros usuarios, ejecutándose en el contexto
+  del navegador de la víctima. En aplicaciones SPA modernas se manifiesta
+  habitualmente como XSS basado en DOM: el dato malicioso nunca pasa por una
+  plantilla del servidor, sino que se inserta directamente en el árbol DOM
+  desde JavaScript (CWE-79).
+
+\item[Cross-Site Request Forgery — CSRF (A01).] Dicha vulnerabilidad obliga 
+  al navegador de una víctima autenticada a enviar, sin su conocimiento, una 
+  petición a una aplicación en la que tiene sesión activa, aprovechando que el 
+  navegador adjunta automáticamente las cookies de sesión (CWE-352).
+
+\needspace{15\baselineskip}
+\item[Fallos de identificación y autenticación (A07).] Se incluyen desde el
+  almacenamiento de contraseñas en texto plano hasta
+  la ausencia de límites de intentos, pasando por mensajes que permiten enumerar
+  usuarios válidos o una gestión débil de la sesión (CWE-287, CWE-307).
+
+\item[Control de acceso roto (A01).] Se produce cuando la aplicación no
+  verifica de forma consistente que el usuario autenticado tenga permiso
+  para operar sobre el recurso al que se desea acceder. El caso particular en el que un
+  identificador de objeto se puede manipular para acceder a datos de otro
+  usuario se conoce como IDOR, \emph{Insecure Direct Object Reference}
+  (CWE-639).
+
+\item[Configuración de seguridad incorrecta (A05).] Se incluye cualquier ausencia de
+  \emph{hardening} (cabeceras de seguridad no configuradas, servicios con
+  configuración por defecto, mensajes de error excesivamente detallados,
+  etc.) que rara vez son explotables de forma aislada, pero que resultan en
+  la reducción de la profundidad de defensa frente a otras posibles 
+  vulnerabilidades (CWE-16).
+\end{description}
+
+Todos los identificadores CWE previamente citados corresponden al catálogo \emph{Common
+Weakness Enumeration}~\citelib{MITRE}, mantenido por MITRE, que clasifica
+tipos genéricos de debilidades de software con independencia de una
+vulnerabilidad concreta. La tabla~\ref{tab:owasp-mapeo} resume la
+correspondencia entre las seis vulnerabilidades a analizar dentro de \breachlab, con su categoría
+en el OWASP Top 10 y su CWE asociado.
+
+\begin{table}[htbp]
+  \centering
+  \begin{tabular}{lp{5.2cm}l}
+    \toprule
+    \tabhead{Vulnerabilidad} & \tabhead{Categoría OWASP} & \tabhead{CWE} \\
+    \midrule
+    Inyección SQL                        & A03 -- Inyección                              & CWE-89  \\
+    XSS (DOM)                            & A03 -- Inyección                              & CWE-79  \\
+    CSRF                                 & A01 -- Pérdida de control de acceso           & CWE-352 \\
+    Fallos de autenticación              & A07 -- Fallos de identificación y autenticación & CWE-287, CWE-307 \\
+    Control de acceso roto (IDOR)        & A01 -- Pérdida de control de acceso           & CWE-639 \\
+    Configuración de seguridad insegura  & A05 -- Configuración de seguridad incorrecta  & CWE-16  \\
+    \bottomrule
+  \end{tabular}
+  \caption{Relación de vulnerabilidades de \breachlab, 
+    OWASP Top 10 y el CWE asociado.}
+  \label{tab:owasp-mapeo}
+\end{table}
+
+\section{Metodologías de seguridad ofensiva}
+
+La identificación y explotación de vulnerabilidades en este trabajo sigue el
+enfoque de las pruebas de penetración de caja blanca: se dispone de acceso
+completo al código fuente de la aplicación auditada, lo que permite localizar
+con precisión el punto exacto en el que se introduce cada fallo y contrastar
+el resultado de la explotación con la causa real en el código, algo que en
+una auditoría de caja negra solo podría inferirse indirectamente.
+
+Como marco de referencia para estructurar las pruebas se ha tomado la OWASP
+Web Security Testing Guide (WSTG)~\citelink{OWASPWSTG}, que descompone la auditoría de una
+aplicación web en fases: reconocimiento, gestión de la configuración, gestión
+de identidad, autenticación, autorización, gestión de sesión, validación de
+entradas, manejo de errores, etc. los cuales se recorrerán en el
+capítulo~\ref{cap:metodologia} durante la definición de la metodología concreta aplicada a
+\breachlab.
+
+Como referencia complementaria sobre técnicas de identificación y
+explotación, en particular para la inyección SQL y control de acceso, se
+ha consultado también \emph{The Web Application Hacker's
+Handbook}~\citelib{STU11}, obra de referencia en pentesting de aplicaciones
+web.
+
+Existen otros marcos de referencia habituales para estructurar una
+auditoría de seguridad, como PTES~\citelink{PTES} (\emph{Penetration
+Testing Execution Standard}), OSSTMM~\citelink{OSSTMM} (\emph{Open Source
+Security Testing Methodology Manual}) o la guía técnica NIST~SP
+800-115~\citelib{NIST80015}. A diferencia de la OWASP WSTG, estos
+marcos se orientan a auditorías de infraestructura y de red de alcance más
+general, y no ofrecen un catálogo de pruebas específico de aplicaciones web
+tan detallado. Por esta razón se ha elegido la OWASP WSTG como metodología
+de referencia de este trabajo: es la guía más extendida y detallada en el
+ámbito concreto de la seguridad de aplicaciones web, y es también la
+metodología de la que se parte en el capítulo~\ref{cap:metodologia} para
+derivar una versión propia más ágil.
+
+\section{CVSS v3.1 como marco de referencia}
+\label{sec:cvss}
+
+El \emph{Common Vulnerability Scoring System} (CVSS) es el estándar utilizado para expresar de forma cuantitativa y
+comparable la severidad de una vulnerabilidad~\citelib{FIRST19}. La versión
+3.1 calcula su
+puntuación partiendo de ocho métricas: vector de ataque (AV), complejidad
+de ataque (AC), privilegios requeridos (PR), interacción del usuario (UI),
+alcance (S) y el impacto sobre confidencialidad (C), integridad (I) y
+disponibilidad (A). El resultado es un valor entre 0.0 y 10.0 y una categoría
+cualitativa (baja, media, alta o crítica).
+
+En este trabajo, cada una de las seis vulnerabilidades del
+capítulo~\ref{cap:explotacion} se acompaña de su vector CVSS v3.1 y de la puntuación obtenida al introducirlo
+en la calculadora oficial de FIRST.org, razonando explícitamente el valor
+asignado a cada métrica en función del escenario concreto de \breachlab.
+
+En noviembre de 2023, FIRST.org publicó CVSS
+v4.0~\citelib{FIRST23}, que incorpora nuevas métricas (requisitos de seguridad y de impacto en sistemas subsecuentes) y redefine el
+tratamiento del alcance. Para el desarrollo de este trabajo se mantiene la versión 3.1
+por ser, en el momento de redacción del mismo, la más extendida en herramientas y
+bases de datos de vulnerabilidades de uso habitual, además de
+resultar suficiente para expresar el impacto de las seis vulnerabilidades
+analizadas en \breachlab.

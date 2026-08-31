@@ -1,0 +1,114 @@
+\chapter*{Glosario de términos}
+\addcontentsline{toc}{chapter}{Glosario de términos}
+\markboth{GLOSARIO DE TÉRMINOS}{}
+
+\begin{description}
+\item[OWASP] Open Worldwide Application Security Project. Fundación sin
+  ánimo de lucro que produce, de forma abierta y colaborativa, herramientas,
+  guías y catálogos de referencia en seguridad de aplicaciones, entre ellos
+  el OWASP Top~10 y la Web Security Testing Guide (WSTG).
+
+\item[WSTG] Web Security Testing Guide. Guía de la OWASP Foundation que
+  descompone la auditoría de una aplicación web en fases (gestión de
+  identidad, autenticación, autorización, gestión de sesión, validación de
+  entradas, etc.) y numera una prueba concreta para cada tipo de fallo,
+  usada en este trabajo para situar cada vulnerabilidad de \breachlab
+  dentro de un marco de referencia reconocido en la industria.
+
+\item[PTES] Penetration Testing Execution Standard. Marco de referencia para
+  estructurar una auditoría de seguridad ofensiva de alcance general (no
+  específico de aplicaciones web), citado en este trabajo como alternativa
+  considerada frente a la OWASP WSTG.
+
+\item[OSSTMM] Open Source Security Testing Methodology Manual. Manual de
+  metodología de pruebas de seguridad de infraestructura, orientado
+  igualmente a un alcance más general que el de la OWASP WSTG.
+
+\item[NIST SP 800-115] Guía técnica del National Institute of Standards and
+  Technology para la planificación y ejecución de pruebas y evaluaciones de
+  seguridad de la información.
+
+\item[MITRE ATT\&CK] Catálogo público, mantenido por MITRE, de tácticas y
+  técnicas empleadas por atacantes reales, organizado por fases de un
+  ataque; se menciona en este trabajo como marco de referencia para el
+  encadenamiento de vulnerabilidades del caso de estudio.
+
+\item[CWE] Common Weakness Enumeration. Catálogo mantenido por MITRE que
+  clasifica y describe tipos genéricos de debilidades de software (por
+  ejemplo, CWE-89 para la inyección SQL), independientemente de una
+  vulnerabilidad concreta.
+
+\item[CVSS] Common Vulnerability Scoring System. Estándar mantenido por
+  FIRST.org para expresar de forma cuantitativa la severidad de una
+  vulnerabilidad mediante un vector de métricas y una puntuación de 0 a 10.
+
+\needspace{15\baselineskip}
+\item[SQL Injection (inyección SQL)] Vulnerabilidad que permite alterar la
+  lógica de una consulta a base de datos insertando código SQL a través de
+  una entrada no validada ni parametrizada.
+
+\item[XSS (Cross-Site Scripting)] Vulnerabilidad que permite ejecutar
+  script arbitrario en el navegador de otro usuario. Puede ser reflejado,
+  almacenado o basado en DOM, según dónde se materialice el fallo.
+
+\item[XSS basado en DOM] Variante de XSS en la que el payload nunca pasa por
+  el servidor: se inserta directamente en el árbol DOM desde JavaScript
+  ejecutado en el navegador, típica de aplicaciones SPA.
+
+\item[CSRF (Cross-Site Request Forgery)] Vulnerabilidad que aprovecha que el
+  navegador adjunta automáticamente las cookies de sesión para forzar a la
+  víctima a enviar, sin saberlo, una petición a una aplicación en la que
+  está autenticada.
+
+\item[IDOR (Insecure Direct Object Reference)] Categoría de control de
+  acceso roto en la que un identificador de objeto (un id de nota, de
+  pedido, etc.) puede manipularse para acceder a recursos de otro usuario
+  sin autorización.
+
+\item[SPA (Single Page Application)] Patrón de arquitectura web en el que
+  el navegador carga una única página que actualiza su contenido de forma
+  dinámica, habitualmente consumiendo una API independiente.
+
+\item[CORS (Cross-Origin Resource Sharing)] Mecanismo del navegador que
+  restringe las peticiones entre orígenes distintos; una
+  aplicación que sirve frontend y backend en orígenes diferentes debe
+  habilitarlo explícitamente, lo que introduce restricciones adicionales
+  que \breachlab evita sirviendo ambos componentes bajo el mismo origen.
+
+\item[Cookie HttpOnly] Atributo de una cookie que impide su lectura desde
+  JavaScript, reduciendo el impacto de un XSS al no poder exfiltrarse
+  mediante script.
+
+\item[Cookie SameSite] Atributo de una cookie que restringe en qué contexto
+  de navegación de terceros se envía. El valor \texttt{Lax} la envía en
+  navegaciones de nivel superior por GET, pero no en subrecursos
+  cross-site.
+
+\item[CSP (Content-Security-Policy)] Cabecera HTTP que permite restringir
+  qué orígenes pueden servir script, estilos u otros recursos en una
+  página, mitigando el impacto de un XSS aunque el saneado del contenido
+  falle.
+
+\item[Hash de contraseña] Resultado de aplicar una función criptográfica
+  de un solo sentido (en este trabajo, mediante Werkzeug) a una contraseña,
+  de forma que pueda verificarse sin almacenarla en texto plano.
+
+\needspace{15\baselineskip}
+\item[Fijación de sesión (\emph{session fixation})] Ataque en el que un
+  identificador de sesión obtenido antes de que la víctima se autentique se
+  reutiliza después con sus privilegios; se evita invalidando la sesión
+  (por ejemplo, con \texttt{session.clear()}) en el momento del inicio de
+  sesión.
+
+\item[Pentesting (test de penetración)] Ejercicio de seguridad ofensiva
+  autorizado que simula un ataque real contra un sistema con el fin de
+  identificar y demostrar vulnerabilidades explotables.
+
+\item[DAST (Dynamic Application Security Testing)] Técnica de análisis de
+  seguridad que examina una aplicación en ejecución, sin acceso a su código
+  fuente, enviándole peticiones y observando sus respuestas.
+
+\item[Clickjacking] Técnica que consiste en embeber una página legítima en
+  un iframe invisible o disfrazado para engañar al usuario y hacer que
+  interactúe con ella sin darse cuenta.
+\end{description}

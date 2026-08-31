@@ -1,0 +1,34 @@
+\chapter*{Resumen}
+\addcontentsline{toc}{chapter}{Resumen}
+
+Este Trabajo Fin de Máster aborda el estudio práctico de las vulnerabilidades
+web más comunes mediante el diseño, la implementación y la explotación
+controlada de un laboratorio propio, denominado \breachlab. La aplicación,
+compuesta por un backend en Flask y un frontend en Astro servidos bajo el
+mismo origen mediante nginx, implementa de forma deliberada seis fallos de
+seguridad: inyección SQL, cross-site scripting (XSS), cross-site request
+forgery (CSRF), fallos de autenticación, control de acceso roto (IDOR) y una
+configuración de seguridad insegura; junto con su corrección correspondiente,
+activable mediante un parámetro dentro del enlace \texttt{(?safe=1)}, lo que permite al 
+usuario comparar de forma directa el comportamiento vulnerable y el seguro sobre el mismo código.
+
+A partir del estudio de la OWASP Web Security Testing Guide (WSTG), tomada
+como metodología de referencia, se deriva una metodología propia más ágil:
+un ciclo fijo de seis pasos --- reconocimiento, identificación, explotación,
+evidencia, verificación de la mitigación y valoración de impacto ---
+aplicado a un subconjunto acotado de pruebas alineado con el OWASP Top 10,
+pensado para equipos de desarrollo pequeños o pymes con recursos limitados.
+Para cada vulnerabilidad se registran evidencias objetivas mediante un
+sistema de logging propio y se calcula su severidad conforme al estándar
+CVSS v3.1. Los resultados se comparan, por un lado, con la propia OWASP
+WSTG completa, en cobertura y esfuerzo estimado, y por otro con dos
+laboratorios de referencia del sector, DVWA y OWASP Juice Shop; y se
+ilustran mediante un caso de estudio que encadena varias de las
+vulnerabilidades analizadas para reproducir un escenario de compromiso
+realista. El trabajo concluye con un conjunto de recomendaciones de
+mitigación y propuestas de ampliación del laboratorio y de la metodología.
+
+\bigskip
+\noindent\textbf{Palabras clave:} seguridad web, metodología ágil,
+OWASP WSTG, OWASP Top 10, inyección SQL, XSS, CSRF, IDOR, CVSS, laboratorio
+de pruebas, seguridad ofensiva.

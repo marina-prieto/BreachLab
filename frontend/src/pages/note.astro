@@ -1,0 +1,47 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+<Layout title="BreachLab · Nota">
+  <p><a data-nav href="/dashboard">← Volver a notas</a></p>
+  <div class="card">
+    <h1 id="title">Nota</h1>
+    <p class="hint" id="meta"></p>
+    <div class="note-body" id="body"></div>
+    <div id="msg"></div>
+  </div>
+
+  <script>
+    import { SAFE, api, requireLogin, esc } from '../lib/client.js';
+
+    await requireLogin();
+
+    const id = new URLSearchParams(location.search).get('id');
+    const { status, data } = await api('/notes/' + id);
+
+    const title = document.getElementById('title');
+    const meta = document.getElementById('meta');
+    const body = document.getElementById('body');
+    const msg = document.getElementById('msg');
+
+    if (status === 403) {
+      // (5) Modo seguro: el control de acceso a nivel de objeto ha denegado el acceso.
+      title.textContent = 'Acceso denegado (403)';
+      msg.className = 'msg err';
+      msg.textContent = 'No autorizado: esta nota no es tuya (control de acceso correcto).';
+    } else if (data && data.note) {
+      const n = data.note;
+      title.textContent = n.title;
+      meta.textContent = `Nota #${n.id} · propietario ${n.owner_id}`;
+      if (SAFE) {
+        // (2) SEGURO: se escapa la salida -> el contenido se muestra como texto.
+        body.textContent = n.content;
+      } else {
+        // (2) VULNERABLE: XSS basado en DOM. Se inyecta HTML sin sanear ->
+        //     un payload como <img src=x onerror=...> se ejecuta.
+        body.innerHTML = n.content;   // <-- LINEA VULNERABLE (XSS DOM)
+      }
+    } else {
+      title.textContent = 'No encontrada';
+    }
+  </script>
+</Layout>

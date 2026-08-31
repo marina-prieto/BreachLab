@@ -1,0 +1,136 @@
+\chapter{Metodología}
+\label{cap:metodologia}
+
+Este capítulo presenta la metodología propia derivada de la OWASP WSTG,
+descrita en el capítulo~\ref{cap:marco-teorico}, así como el proceso
+concreto seguido para aplicarla sobre \breachlab.
+
+\section{Derivación de una metodología ágil a partir de la OWASP WSTG}
+\label{sec:derivacion-metodologia}
+
+La OWASP WSTG v4.2 organiza sus pruebas en once categorías (gestión de la
+configuración, gestión de identidad, autenticación, autorización, gestión de
+sesión, validación de entradas, manejo de errores, criptografía, lógica de
+negocio, del lado del cliente y pruebas de API), con más de noventa pruebas
+individuales en total. Recorrer la guía completa exige un equipo con
+disponibilidad y conocimiento amplios, algo razonable en una auditoría
+externa de alcance general, pero difícilmente asumible por un equipo de
+desarrollo pequeño o una pyme que necesite validar de forma recurrente los
+riesgos más críticos de su propia aplicación sin subcontratar una auditoría
+completa.
+
+A partir de esta observación se deriva la metodología propia aplicada en
+este trabajo, que agiliza la WSTG mediante dos decisiones:
+
+\begin{itemize}
+\item \textbf{Acotar el alcance a un subconjunto priorizado de pruebas.} En
+  lugar de recorrer las once categorías de la WSTG, se seleccionan
+  únicamente las pruebas correspondientes a las categorías del OWASP Top~10
+  con mayor prevalencia e impacto documentado~\citelib{OWASP21}
+  (inyección, XSS, CSRF, autenticación, control de acceso y configuración de
+  seguridad), descartando de forma explícita categorías de menor
+  probabilidad en el contexto de una aplicación pequeña (por ejemplo,
+  pruebas de criptografía avanzada o de lógica de negocio compleja), que
+  quedan como trabajo futuro (apartado~\ref{sec:trabajo-futuro}).
+\item \textbf{Consolidar las fases por vulnerabilidad en un único ciclo
+  corto.} Frente al desglose detallado de sub-pasos de cada prueba WSTG, se
+  define un ciclo único de seis pasos (apartado~\ref{sec:proceso}),
+  reconocimiento, identificación, explotación, evidencia, verificación de la
+  mitigación y valoración de impacto, aplicado de forma idéntica a cada
+  vulnerabilidad, lo que reduce el tiempo de preparación por prueba y
+  simplifica la comparación de resultados entre vulnerabilidades distintas.
+\end{itemize}
+
+\needspace{15\baselineskip}
+El resultado es una metodología más rápida de aplicar y más accesible para
+un equipo con recursos limitados, a costa de una cobertura menor que la de
+la WSTG completa. El capítulo~\ref{cap:comparativa} cuantifica esta
+diferencia de cobertura y discute en qué contextos resulta preferible cada
+una de las dos aproximaciones.
+
+\section{Proceso aplicado}
+\label{sec:proceso}
+
+Para cada una de las seis vulnerabilidades introducidas deliberadamente en \breachlab se ha
+seguido el mismo proceso de trabajo, descrito a continuación, con el fin de
+que los resultados del capítulo~\ref{cap:explotacion} sean comparables entre
+sí y reproducibles.
+
+\begin{enumerate}
+\item \textbf{Reconocimiento:} identificación del endpoint o vista implicada
+  y de la entrada de usuario que llega hasta él, revisando el código fuente
+  de \texttt{backend/api.py} y de las páginas Astro correspondientes.
+\item \textbf{Identificación:} localización exacta de la línea de código
+  donde el dato no confiable se usa de forma insegura (concatenación en una
+  consulta SQL, asignación a \verb|innerHTML|, ausencia de comprobación de
+  propietario, etc.).
+\item \textbf{Explotación:} construcción de un payload o petición que
+  demuestre el fallo en la rama vulnerable (por defecto, sin
+  \texttt{?safe=1}), utilizando el navegador, \texttt{curl} o herramientas
+  especializadas según el caso.
+\item \textbf{Evidencia:} captura del resultado de la explotación junto con
+  la línea correspondiente registrada en \texttt{backend/logs/attacks.log}.
+\item \textbf{Verificación de la mitigación:} repetición de la misma
+  petición con \texttt{?safe=1} para comprobar que la contramedida
+  implementada bloquea el ataque, y comparación del fragmento de código
+  vulnerable frente al seguro.
+\item \textbf{Valoración de impacto:} cálculo del vector y puntuación
+  CVSS v3.1 correspondientes (véase el apartado~\ref{sec:cvss}).
+\end{enumerate}
+
+\needspace{15\baselineskip}
+\section{Correspondencia con la OWASP WSTG}
+
+Aunque el proceso de seis pasos anterior es común a las seis
+vulnerabilidades, cada una de ellas se corresponde además con una prueba
+concreta del catálogo de la OWASP Web Security Testing Guide
+(WSTG)~\citelink{OWASPWSTG} mencionada en el
+capítulo~\ref{cap:marco-teorico}, lo que permite situar el trabajo dentro de
+un marco de referencia reconocido en la industria en lugar de depender únicamente de una
+metodología ad-hoc. La tabla~\ref{tab:wstg-mapeo} recoge todas las
+correspondencias entre las vulnerabilidades y sus identificadores dentro de WSTG.
+
+\begin{table}[htbp]
+  \centering
+  \small
+  \begin{tabular}{lll}
+    \toprule
+    \tabhead{Vulnerabilidad en \breachlab} & \tabhead{Identificador WSTG} & \tabhead{Prueba} \\
+    \midrule
+    Inyección SQL                    & WSTG-INPV-05 & Testing for SQL Injection \\
+    XSS basado en DOM                & WSTG-CLNT-01 & Testing for DOM-based XSS \\
+    CSRF                             & WSTG-SESS-05 & Testing for CSRF \\
+    Enumeración de usuarios          & WSTG-IDNT-04 & Testing for Account Enumeration \\
+    Fuerza bruta / bloqueo de cuenta & WSTG-ATHN-03 & Testing for Weak Lock Out Mechanism \\
+    IDOR                             & WSTG-ATHZ-04 & Testing for IDOR \\
+    Config.\ insegura (clickjacking) & WSTG-CLNT-09 & Testing for Clickjacking \\
+    \bottomrule
+  \end{tabular}
+  \caption{Correspondencia entre las vulnerabilidades de \breachlab y las
+    pruebas de la OWASP WSTG v4.2.}
+  \label{tab:wstg-mapeo}
+\end{table}
+
+\section{Herramientas empleadas}
+
+Además del navegador web y de las herramientas de desarrollador integradas
+en él, se han utilizado: \texttt{curl}, para reproducir peticiones HTTP de
+forma exacta y guardarlas como evidencia; \texttt{sqlmap}~\citelink{SQLMAP},
+para automatizar
+la detección y explotación de la inyección SQL; y el propio registro
+\texttt{backend/logs/attacks.log}, seguido en tiempo real con
+\verb|tail -f|, como fuente de evidencia objetiva independiente de las
+capturas de pantalla.
+
+\section{Criterios de severidad}
+
+La severidad de cada vulnerabilidad se expresa mediante su vector y
+puntuación CVSS v3.1, calculados con la calculadora oficial de
+FIRST.org~\citelink{CVSSCALC} a
+partir del vector razonado en el apartado correspondiente del
+capítulo~\ref{cap:explotacion}.
+Cuando una vulnerabilidad no es explotable de forma aislada, como sería el caso de la
+configuración de seguridad insegura del apartado~\ref{sec:secmisconfig}, se documenta como un
+control compensatorio ausente que amplifica el impacto de otra
+vulnerabilidad, en lugar de forzar una puntuación CVSS independiente que no
+reflejaría correctamente la naturaleza de dicha vulnerabilidad.

@@ -1,0 +1,144 @@
+\chapter{Diseño del entorno de pruebas controlado}
+\label{cap:diseno}
+
+Este capítulo describe el diseño del entorno de pruebas (\breachlab)
+creado con el fin de reproducir de forma controlada las seis vulnerabilidades
+analizadas en el capítulo~\ref{cap:explotacion}, incluyendo en el proceso la justificación de las
+decisiones de diseño,
+la arquitectura resultante, el modelo de datos, el mecanismo que permite
+alternar entre la rama vulnerable y la rama segura del código, el registro
+de evidencias y el procedimiento de despliegue.
+
+\section{Justificación del diseño}
+
+Existen laboratorios de referencia ampliamente utilizados en formación en
+ciberseguridad, como DVWA~\citelink{DVWA} u OWASP Juice
+Shop~\citelink{JUICESHOP} (véase el capítulo~\ref{cap:comparativa}), que
+cubren un catálogo de vulnerabilidades más amplio que el de este trabajo.
+Sin embargo, ambos reproducen arquitecturas monolíticas en las que el
+servidor genera el HTML final. Una parte creciente de las aplicaciones
+reales sigue en cambio un patrón de interfaz de tipo SPA (\emph{Single Page
+Application}) que consume una API JSON independiente, patrón que modifica de
+forma sustancial cómo se manifiestan vulnerabilidades como el XSS (que pasa
+a ser un problema del DOM en el cliente y no de una plantilla en el
+servidor). \breachlab se ha diseñado expresamente con esta arquitectura para
+poder discutir esa diferencia con conocimiento de causa.
+
+Un segundo requisito de diseño fue servir el frontend y el backend bajo el
+mismo origen. Esto es imprescindible para poder demostrar el CSRF de forma
+realista: si la API se sirviera en un origen distinto sujeto a CORS, el
+navegador ya estaría aplicando una restricción adicional que no reflejaría
+el caso típico de una aplicación desplegada como monolito lógico (aunque sea
+físicamente en dos contenedores).
+
+\section{Arquitectura}
+
+\breachlab está formado por tres componentes desplegados mediante Docker
+Compose: un contenedor nginx que sirve los artefactos estáticos generados
+por Astro; un contenedor
+Flask~\citelink{FLASK} que expone la API JSON de la aplicación; y una base
+de datos SQLite persistida
+en un volumen. 
+
+\needspace{15\baselineskip}
+El navegador solo habla con nginx, a través del puerto 8080: las
+peticiones a rutas estáticas (\verb|/|) se resuelven contra el build de
+Astro y las peticiones a \verb|/api/*| se reenvían al backend Flask. Servir
+ambos componentes bajo el mismo origen es lo que permite que la cookie de
+sesión viaje sin restricciones de CORS entre frontend y backend.
+
+\begin{figure}[htbp]
+  \centering
+  \begin{tikzpicture}[
+      node distance=9mm and 14mm,
+      box/.style={draw, rounded corners, minimum width=3.1cm,
+        minimum height=9mm, align=center, font=\small},
+      lbl/.style={font=\scriptsize, align=center, fill=white, inner sep=1pt},
+      arr/.style={-{Latex[length=2mm]}}
+    ]
+    \node[box] (browser) {Navegador};
+    \node[box, below=of browser] (nginx) {nginx (web)\\[1pt]\texttt{:8080}};
+    \node[box, below left=16mm and -2mm of nginx] (astro) {Astro\\[1pt](\emph{build} estático)};
+    \node[box, below right=16mm and -2mm of nginx] (flask) {Flask\\[1pt]\texttt{api:5000}};
+    \node[box, below=of flask] (sqlite) {SQLite};
+
+    \draw[arr] (browser) -- node[lbl, right] {HTTP\\(mismo origen)} (nginx);
+    \draw[arr] (nginx.south) -- ++(0,-4mm) -| node[lbl, pos=0.6, above] {\texttt{/}\\(estático)} (astro.north);
+    \draw[arr] (nginx.south) -- ++(0,-4mm) -| node[lbl, pos=0.6, above] {\texttt{/api/*}\\(proxy)} (flask.north);
+    \draw[arr] (flask) -- (sqlite);
+  \end{tikzpicture}
+  \caption{Arquitectura de \breachlab.}
+  \label{fig:arquitectura}
+\end{figure}
+
+El interruptor \texttt{?safe=1} es la decisión de diseño más interesante del
+laboratorio: añadido a la URL de cualquier página, se propaga tanto a las
+llamadas del frontend a la API como a la lógica de renderizado del propio
+frontend, activando de forma simultánea la contramedida de backend y de
+frontend para la vulnerabilidad correspondiente. Asimismo, el
+código fuente contiene ambas ramas (vulnerable y corregida) de cada
+endpoint, lo que permite comparar directamente el antes y el después sin
+mantener dos aplicaciones independientes.
+
+\section{Modelo de datos y usuarios de prueba}
+
+Se ha optado por SQLite como motor de base de datos por su sencillez: no
+requiere un servidor independiente ni configuración previa, y resulta
+suficiente para un laboratorio de un único usuario concurrente con finalidad
+educativa y no de rendimiento.
+
+El esquema de la base de datos consta de dos tablas: \verb|users| (\verb|id|,
+\verb|username|, \verb|password| en texto plano, \verb|password_hash| y
+\verb|role|) y \verb|notes| (\verb|id|, \verb|owner_id|, \verb|title|,
+\verb|content|). El campo \verb|password| se mantiene deliberadamente en
+texto plano junto al hash para poder ilustrar en el
+capítulo~\ref{cap:explotacion} la diferencia
+entre la ruta vulnerable, que compara contraseñas en claro, y la ruta
+segura, que utiliza \verb|check_password_hash| del módulo de seguridad de
+Werkzeug~\citelink{WERKZEUG}.
+
+\begin{table}[htbp]
+  \centering
+  \begin{tabular}{lll}
+    \toprule
+    \tabhead{Usuario} & \tabhead{Contraseña} & \tabhead{Rol} \\
+    \midrule
+    admin  & Admin123!     & admin \\
+    marina & contraSegura  & user  \\
+    pablo  & qwerty        & user  \\
+    \bottomrule
+  \end{tabular}
+  \caption{Usuarios de prueba precargados por \texttt{start\_db()} en \texttt{backend/api.py}.}
+  \label{tab:usuarios}
+\end{table}
+
+Además de los usuarios, se precargan dentro de la base de datos cuatro notas con datos ficticios
+ (una tarjeta de crédito, la contraseña de un correo, etc.),
+propiedad de distintos usuarios, que se utilizan en el
+capítulo~\ref{cap:explotacion} para demostrar el acceso indebido a
+información de terceros a través del IDOR.
+
+\section{Registro de evidencias}
+
+Cada acción relevante (inicio de sesión correcto o fallido, inyección SQL,
+cambio de contraseña, acceso a notas ajenas, acceso al panel de
+administración) permanece registrado mediante la función \verb|log_event()| de
+\texttt{backend/api.py} en el fichero \texttt{backend/logs/attacks.log},
+persistido fuera del contenedor mediante un volumen Docker. Cada línea
+incluye una marca de tiempo, el modo de ejecución (vulnerable o seguro), la
+IP de origen, el tipo de evento y detalles específicos del mismo (usuario,
+identificador de nota, consulta SQL ejecutada, etc.). Este registro se
+utiliza en el capítulo~\ref{cap:explotacion} como evidencia objetiva de cada
+explotación.
+
+\section{Despliegue}
+
+El laboratorio se levanta con un único comando, \verb|docker compose up --build|,
+quedando disponible en la máquina local, accediendo desde \url{http://localhost:8080}. 
+Otra opción sería ejecutar el backend Flask y el frontend Astro por separado, en
+cuyo caso el proxy configurado en \texttt{astro.config.mjs} redirige las
+llamadas a \texttt{/api} hacia el backend en el puerto 5000. 
+
+El endpoint \verb|GET /api/reset| reinicializa la base de datos a su estado inicial, lo
+que resulta útil para repetir una explotación en condiciones limpias antes
+de capturar evidencias.

@@ -1,0 +1,118 @@
+\chapter{Planificación}
+\label{cap:planificacion}
+
+Este capítulo recoge la planificación seguida para desarrollar el trabajo
+entre el 20 de julio y el 23 de agosto de 2026 (cinco semanas), organizada
+en siete fases secuenciales, desde la selección de la metodología de
+referencia y del entorno de pruebas hasta la redacción final de la memoria.
+Al tratarse de un trabajo individual, las fases se han ejecutado de forma
+mayormente secuencial, con solapamientos puntuales entre fases contiguas
+(por ejemplo, entre el diseño del entorno y la definición de la metodología
+propia, desarrollados con fuerte dependencia mutua).
+
+\section{Fases de trabajo}
+
+\begin{enumerate}
+\item \textbf{Selección de la metodología de referencia y del entorno de
+  pruebas.} Estudio preliminar de metodologías de seguridad ofensiva
+  existentes (OWASP WSTG, PTES, OSSTMM, NIST SP 800-115) y elección de la
+  OWASP WSTG como referencia; decisión de construir un entorno de pruebas
+  propio (\breachlab) en lugar de partir de uno ya existente, para poder
+  instrumentar el código y comparar ambas ramas, vulnerable y corregida.
+\item \textbf{Estudio de la metodología de referencia.} Revisión en
+  profundidad de la estructura, fases y catálogo de pruebas de la OWASP
+  WSTG (capítulo~\ref{cap:marco-teorico}).
+\item \textbf{Diseño e implementación del entorno de pruebas.} Definición de
+  la arquitectura de \breachlab, implementación del backend y el frontend,
+  introducción deliberada de las seis vulnerabilidades y de su
+  contramedida, y despliegue mediante Docker Compose
+  (capítulo~\ref{cap:diseno}).
+\item \textbf{Definición de la metodología propia.} Derivación de una
+  metodología ágil a partir de la OWASP WSTG, acotando su alcance a un
+  subconjunto de pruebas representativo (capítulo~\ref{cap:metodologia}).
+\item \textbf{Ejecución de las pruebas.} Aplicación de la metodología propia
+  sobre \breachlab: identificación, explotación, evidencia y verificación
+  de la contramedida de cada vulnerabilidad (capítulo~\ref{cap:explotacion});
+  comparación con dos laboratorios de referencia y con la propia OWASP WSTG
+  (capítulo~\ref{cap:comparativa}); y construcción de un caso de estudio que
+  encadena varias vulnerabilidades (capítulo~\ref{cap:caso-estudio}).
+\item \textbf{Análisis de resultados y redacción de conclusiones.} Valoración
+  del grado de cumplimiento de los objetivos planteados en el
+  apartado~\ref{sec:objetivos} y propuesta de líneas de trabajo futuro
+  (capítulo~\ref{cap:conclusiones}).
+\item \textbf{Redacción y revisión final de la memoria.} Consolidación de
+  todos los capítulos, revisión de forma y contenido, y preparación de los
+  anexos de instalación y manual de usuario.
+\end{enumerate}
+
+\section{Estimación temporal}
+
+La figura~\ref{fig:gantt-planificacion} muestra el diagrama de Gantt de las
+siete fases descritas, a lo largo de las cinco semanas del proyecto, y la
+tabla~\ref{tab:planificacion} recoge la duración de cada fase y sus fechas
+concretas.
+
+\begin{figure}[htbp]
+  \centering
+  \resizebox{\textwidth}{!}{%
+  \begin{ganttchart}[
+      hgrid,
+      vgrid={*{7}{draw=none}, draw=gray!40},
+      x unit=0.38cm,
+      y unit title=0.7cm,
+      y unit chart=0.6cm,
+      title height=1,
+      title/.style={draw=none, fill=gray!25},
+      title label font=\scriptsize\bfseries,
+      bar height=0.55,
+      bar/.style={fill=gray!70},
+      bar label font=\scriptsize,
+      bar label node/.append style={text width=4.4cm, align=right},
+    ]{1}{35}
+    \gantttitle{Semana 1}{7}
+    \gantttitle{Semana 2}{7}
+    \gantttitle{Semana 3}{7}
+    \gantttitle{Semana 4}{7}
+    \gantttitle{Semana 5}{7} \\
+    \ganttbar{1. Selección de metodología y entorno}{1}{2} \\
+    \ganttbar{2. Estudio de la metodología de referencia}{3}{6} \\
+    \ganttbar{3. Diseño e implementación de \breachlab}{7}{15} \\
+    \ganttbar{4. Definición de la metodología propia}{16}{19} \\
+    \ganttbar{5. Ejecución de pruebas y comparativa}{20}{28} \\
+    \ganttbar{6. Análisis de resultados y conclusiones}{29}{30} \\
+    \ganttbar{7. Redacción y revisión final}{31}{35}
+  \end{ganttchart}%
+  }
+  \caption{Diagrama de Gantt de la planificación.}
+  \label{fig:gantt-planificacion}
+\end{figure}
+
+\begin{table}[htbp]
+  \centering
+  \small
+  \begin{tabular}{p{6.4cm}p{1.6cm}p{2.5cm}p{2.5cm}}
+    \toprule
+    \tabhead{Fase} & \tabhead{Duración} & \tabhead{Fechas} & \tabhead{Entregable} \\
+    \midrule
+    1. Selección de metodología y entorno & 2 días & 20--21 jul. & Alcance definido \\
+    2. Estudio de la metodología de referencia & 4 días & 22--25 jul. & Capítulo~\ref{cap:marco-teorico} \\
+    3. Diseño e implementación de \breachlab & 9 días & 26 jul.--3 ago. & \breachlab desplegado \\
+    4. Definición de la metodología propia & 4 días & 4--7 ago. & Capítulo~\ref{cap:metodologia} \\
+    5. Ejecución de pruebas y comparativa & 9 días & 8--16 ago. & Capítulos~\ref{cap:explotacion}--\ref{cap:caso-estudio} \\
+    6. Análisis de resultados y conclusiones & 2 días & 17--18 ago. & Capítulo~\ref{cap:conclusiones} \\
+    7. Redacción y revisión final & 5 días & 19--23 ago. & Memoria final \\
+    \bottomrule
+  \end{tabular}
+  \caption{Planificación temporal del trabajo.}
+  \label{tab:planificacion}
+\end{table}
+
+Las fases de mayor carga son la 3 (diseño e implementación de \breachlab) y
+la 5 (ejecución de las pruebas y comparativa), al concentrar la parte más
+técnica del trabajo; el resto de fases, de estudio y de redacción, se han
+planificado con una duración más ajustada. Las fases 3 y 4 se han
+desarrollado además con un solapamiento parcial: varias decisiones de
+diseño de \breachlab (por ejemplo, qué vulnerabilidades incluir) se han
+tomado ya pensando en el subconjunto de pruebas que definiría la
+metodología propia, por lo que ambas fases se han retroalimentado en lugar
+de ejecutarse de forma estrictamente independiente.

@@ -1,0 +1,32 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+<Layout title="BreachLab · Admin">
+  <h1>Panel de administración</h1>
+  <div class="card">
+    <p class="hint">En modo vulnerable no se comprueba el rol: cualquier usuario ve
+    esta tabla (incluidas las contraseñas). En modo seguro se exige rol admin.</p>
+    <div id="out"></div>
+  </div>
+
+  <script>
+    import { api, requireLogin, esc } from '../lib/client.js';
+
+    await requireLogin();
+    const { status, data } = await api('/admin');
+    const out = document.getElementById('out');
+
+    if (status === 403) {
+      out.innerHTML = '<div class="msg err">Acceso denegado (403): no eres admin '
+                    + '(control de acceso correcto).</div>';
+    } else if (data && data.users) {
+      let rows = data.users.map((u) =>
+        `<tr><td>${u.id}</td><td>${esc(u.username)}</td><td>${esc(u.role)}</td>`
+        + `<td><code>${esc(u.password)}</code></td></tr>`).join('');
+      out.innerHTML = `<table><thead><tr><th>id</th><th>usuario</th>`
+        + `<th>rol</th><th>contraseña</th></tr></thead><tbody>${rows}</tbody></table>`;
+    } else {
+      out.innerHTML = '<div class="msg err">No autenticado.</div>';
+    }
+  </script>
+</Layout>

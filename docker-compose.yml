@@ -1,0 +1,30 @@
+# ==========================================================================
+# Laboratorio de la app vulnerable propia (backend Flask API + frontend Astro)
+# Levantar:  docker compose up --build
+# Abrir:     http://localhost:8080
+# ==========================================================================
+services:
+  api:
+    build: ./backend
+    container_name: tfm-api
+    # No publiques el puerto del backend en un entorno real; aqui se accede
+    # a traves del proxy de nginx (servicio web) en el mismo origen.
+    expose:
+      - "5000"
+    # Persiste el log de eventos de seguridad fuera del contenedor para
+    # poder adjuntarlo como evidencia en la memoria.
+    volumes:
+      - ./backend/logs:/app/logs
+    networks: [lab]
+
+  web:
+    build: ./frontend
+    container_name: tfm-web
+    ports:
+      - "8080:80"
+    depends_on: [api]
+    networks: [lab]
+
+networks:
+  lab:
+    driver: bridge

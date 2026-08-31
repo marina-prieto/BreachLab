@@ -1,0 +1,147 @@
+\chapter{Pruebas y comparativa}
+\label{cap:comparativa}
+
+Con el fin de contextualizar los resultados del capítulo~\ref{cap:explotacion},
+este capítulo compara, por un lado, la metodología propia derivada en el
+capítulo~\ref{cap:metodologia} frente a la OWASP WSTG completa de la que
+parte; y, por otro, repite la explotación de vulnerabilidades equivalentes sobre dos
+laboratorios de referencia ampliamente utilizados en formación en
+ciberseguridad: DVWA (\emph{Damn Vulnerable Web Application}) y OWASP Juice
+Shop, comparando los tres entornos desde varios criterios objetivos.
+
+\section{Comparativa metodológica: proceso propio frente a la OWASP WSTG}
+\label{sec:comparativa-metodologica}
+
+La tabla~\ref{tab:comparativa-metodologica} compara la metodología propia
+aplicada en el capítulo~\ref{cap:explotacion} con la OWASP WSTG completa de
+la que se deriva (apartado~\ref{sec:derivacion-metodologia}), en términos de
+cobertura y de esfuerzo estimado de aplicación.
+
+\begin{table}[htbp]
+  \centering
+  \small
+  \begin{tabular}{p{3.0cm}p{5.3cm}p{5.3cm}}
+    \toprule
+    \tabhead{Criterio} & \tabhead{OWASP WSTG completa} & \tabhead{Metodología propia} \\
+    \midrule
+    Categorías cubiertas &
+      11 categorías, más de 90 pruebas individuales &
+      6 pruebas, correspondientes a las categorías del OWASP Top~10 de mayor prevalencia e impacto \\
+    Pasos por prueba &
+      Variable según categoría, con sub-pasos específicos de cada prueba &
+      Ciclo único y fijo de 6 pasos, aplicado igual a toda vulnerabilidad \\
+    Perfil requerido &
+      Equipo de auditoría con conocimiento amplio en todas las categorías &
+      Equipo de desarrollo con conocimiento del OWASP Top~10 \\
+    Esfuerzo estimado &
+      Alto; propio de una auditoría externa de alcance general &
+      Bajo-medio; aplicable de forma recurrente por un equipo interno \\
+    Contexto de uso recomendado &
+      Auditoría formal completa, con contrato y alcance definido &
+      Validación ágil y recurrente en equipos pequeños o pymes con recursos limitados \\
+    \bottomrule
+  \end{tabular}
+  \caption{Comparativa entre la OWASP WSTG completa y la metodología propia.}
+  \label{tab:comparativa-metodologica}
+\end{table}
+
+La metodología propia cubre así una fracción reducida de la WSTG completa (6
+de más de 90 pruebas), pero concentrada en las categorías de mayor
+prevalencia según el OWASP Top~10~\citelib{OWASP21}, lo que permite obtener,
+con una fracción del esfuerzo, una primera valoración de los riesgos más
+probables de una aplicación. No sustituye a una auditoría completa, pero
+resulta más ágil para su aplicación recurrente por un equipo con recursos
+limitados, que es precisamente el objetivo con el que se derivó
+(apartado~\ref{sec:derivacion-metodologia}). No se ha medido el tiempo real
+de aplicación de la WSTG completa sobre \breachlab, por lo que la
+comparación de esfuerzo anterior es una estimación cualitativa y no una
+medición cronometrada; una comparación cuantitativa queda propuesta como
+trabajo futuro (apartado~\ref{sec:trabajo-futuro}).
+
+\section{Comparativa de entornos: DVWA y OWASP Juice Shop}
+
+\subsection{Vulnerabilidades equivalentes en DVWA y Juice Shop}
+
+DVWA reproduce, entre otras, inyección SQL, XSS almacenado y reflejado,
+CSRF y control de acceso roto, con distintos niveles de dificultad
+seleccionables (\texttt{low}, \texttt{medium}, \texttt{high},
+\texttt{impossible}) que permiten observar cómo evoluciona una misma
+contramedida. OWASP Juice Shop, por su parte, es una aplicación
+Angular/Node.js vulnerable de forma intencionada que organiza sus retos
+(«\emph{challenges}») en categorías alineadas con el OWASP Top~10, el OWASP
+ASVS y el OWASP Automated Threat Handbook. La tabla~\ref{tab:equivalencias}
+recoge, para cada vulnerabilidad de \breachlab, el módulo o reto
+equivalente en cada laboratorio, como referencia para quien desee reproducir
+la comparación de forma práctica.
+
+\begin{table}[htbp]
+  \centering
+  \small
+  \begin{tabular}{lll}
+    \toprule
+    \tabhead{Vulnerabilidad en \breachlab} & \tabhead{Módulo en DVWA} & \tabhead{Reto en Juice Shop} \\
+    \midrule
+    Inyección SQL             & SQL Injection / SQL Injection (Blind) & Login Admin \\
+    XSS basado en DOM         & XSS (DOM)                             & DOM XSS \\
+    CSRF                      & CSRF                                  & CSRF \\
+    Fallos de autenticación   & Brute Force                           & Sin reto directamente equivalente \\
+    IDOR                      & Sin módulo directamente equivalente   & View Basket / Manipulate Basket \\
+    Configuración insegura    & Sin módulo directamente equivalente   & CSP Bypass / HTTP-Header XSS \\
+    \bottomrule
+  \end{tabular}
+  \caption{Módulos y retos de DVWA y OWASP Juice Shop equivalentes a cada
+    vulnerabilidad de \breachlab.}
+  \label{tab:equivalencias}
+\end{table}
+
+\subsection{Comparativa}
+
+\begin{table}[htbp]
+  \centering
+  \small
+  \begin{tabular}{p{3.0cm}p{2.6cm}p{3.1cm}p{3.4cm}}
+    \toprule
+    \tabhead{Criterio} & \tabhead{DVWA} & \tabhead{OWASP Juice Shop} & \tabhead{BreachLab} \\
+    \midrule
+    Arquitectura &
+      Monolito PHP + MySQL &
+      SPA Angular + API Node.js &
+      SPA Astro + API Flask (mismo origen) \\
+    Cobertura de vulnerabilidades &
+      Amplia, con niveles de dificultad &
+      Muy amplia (todo el OWASP Top~10) &
+      Acotada a 6 vulnerabilidades, en profundidad \\
+    Rama segura incluida &
+      Sí (nivel \texttt{impossible}) &
+      No (hay que corregir aparte) &
+      Sí, en el mismo código (\texttt{?safe=1}) \\
+    Evidencia objetiva automatizada &
+      No &
+      Puntuación de retos &
+      Registro de eventos (\texttt{attacks.log}) \\
+    Valor didáctico para este TFM &
+      Referencia de amplitud &
+      Referencia de amplitud y de retos &
+      Control total del código y de la comparación vulnerable/seguro \\
+    \bottomrule
+  \end{tabular}
+  \caption{Comparativa entre DVWA, OWASP Juice Shop y BreachLab.}
+  \label{tab:comparativa}
+\end{table}
+
+Como ampliación objetiva de esta comparativa, se recomienda ejecutar un
+análisis DAST automatizado (por ejemplo, un escaneo \emph{baseline} de OWASP
+ZAP~\citelink{ZAP}) contra los tres laboratorios, en su modo vulnerable y, cuando exista,
+en su modo corregido, y recoger en una tabla el número de alertas por
+severidad detectadas en cada caso.
+
+\subsection{Conclusión de la comparativa}
+
+DVWA y OWASP Juice Shop resultan más adecuados para adquirir una visión
+amplia de vulnerabilidades diversas, pero al ser aplicaciones de
+terceros no permiten instrumentar el código para generar evidencias propias
+ni modificar la arquitectura para estudiar su efecto sobre una
+vulnerabilidad concreta. \breachlab, al ser un desarrollo propio con
+arquitectura SPA + API y ambas ramas de código en el mismo lugar, resulta
+más limitado en cobertura pero permite un análisis más profundo y
+verificable de cada vulnerabilidad.

@@ -1,0 +1,124 @@
+\chapter{Introducción}
+\label{cap:introduccion}
+
+La seguridad de las aplicaciones web sigue siendo una de
+las superficies de ataque más explotadas en incidentes de seguridad reales.
+Informes como el OWASP Top~10~\citelib{OWASP21} sitúan de forma recurrente
+vulnerabilidades como la inyección de código, el scripting o el
+control de acceso roto entre los riesgos más críticos y más frecuentes en
+aplicaciones, a pesar de tratarse de fallos ampliamente
+documentados y, mayormente, los más sencillos de corregir una vez
+identificados. Esta paradoja es el punto de partida de este trabajo.
+
+Frente a un enfoque puramente teórico, este TFM
+se acerca a estas vulnerabilidades desde la práctica: diseñando una
+aplicación web propia, \breachlab, en la que cada fallo se presenta en la misma
+de forma deliberada, se explota siguiendo una metodología de seguridad ofensiva
+y se corrige aplicando las medidas estándar del sector, de modo que el
+mismo entorno sirve para mostrar tanto el problema como la solución.
+
+Además del componente práctico, este trabajo parte del estudio de una
+metodología de referencia ya consolidada en el sector, la OWASP Web
+Security Testing Guide (WSTG)~\citelink{OWASPWSTG}, para derivar de ella una
+metodología propia más ágil: un subconjunto acotado de pruebas, centrado en
+las categorías de mayor impacto, pensado para escenarios con recursos
+limitados (equipos pequeños) en los que ejecutar la guía completa no
+resulta viable. Dicha metodología propia se aplica sobre \breachlab de forma
+controlada y se compara, en cobertura y en esfuerzo estimado, con la
+metodología de referencia de la que parte (capítulos~\ref{cap:metodologia}
+y~\ref{cap:comparativa}).
+
+\section{Motivación}
+
+La motivación de este trabajo es doble. Por un lado, personal y formativa:
+comprender en profundidad cómo se manifiestan en código real vulnerabilidades
+estudiadas comúnmente de forma conceptual: \emph{qué falla}, \emph{por qué
+falla} y \emph{cómo se corrige}. Por otro lado,
+práctica: la mayoría de entornos de entrenamiento disponibles públicamente
+(DVWA, OWASP Juice Shop, entre otros) se apoyan en arquitecturas monolíticas
+clásicas, mientras que buena parte de las aplicaciones actuales se despliegan
+como una interfaz de tipo SPA (\emph{Single Page Application}) que aprovecha por ello
+una API individual e independiente. Esta diferencia arquitectónica no es trivial:
+modifica, por ejemplo, dónde se materializa un XSS o cómo se comporta la cookie de sesión
+frente a un ataque CSRF.
+
+Construir un laboratorio propio con esta arquitectura permite, además,
+instrumentar el propio código para generar evidencias objetivas de cada
+explotación mediante un registro de eventos, pudiendo alternar entre la rama
+vulnerable y la rama corregida de cada endpoint sin la necesidad de mantener 
+dos aplicaciones distintas, lo que resulta especialmente útil de cara a la 
+documentación de este trabajo y posibles evoluciones futuras.
+
+\section{Objetivos}
+\label{sec:objetivos}
+
+De acuerdo con la propuesta de este Trabajo Fin de Máster, el objetivo
+general es estudiar una metodología de referencia para pruebas de seguridad
+web, derivar de ella una metodología propia más ágil y validar ambas de
+forma práctica mediante la creación de un entorno de pruebas controlado.
+Dicho objetivo se materializaría
+en los siguientes objetivos:
+
+\begin{itemize}
+\item Estudiar una metodología de referencia existente en el ámbito de la
+  seguridad de aplicaciones web (OWASP WSTG).
+\item Diseñar un entorno web vulnerable controlado.
+\item Derivar, a partir de la metodología estudiada, una metodología propia
+  orientada a la agilidad, acotando su alcance a un subconjunto de pruebas
+  relevante en contextos con recursos limitados.
+\item Identificar vulnerabilidades siguiendo dicha metodología propia.
+\item Explotar las vulnerabilidades de forma controlada.
+\item Analizar el impacto técnico y funcional de cada vulnerabilidad.
+\item Comparar los resultados y el esfuerzo de la metodología propia frente
+  a la metodología de referencia de la que parte.
+\end{itemize}
+
+\section{Alcance y limitaciones}
+
+Este trabajo se limita a la capa de aplicación web, lo que significa que no se abordan
+vulnerabilidades de red, de infraestructura ni de sistema operativo. De las
+diez categorías del OWASP Top 10 \citelib{OWASP21}, se estudiarán en profundidad las seis
+que pueden reproducirse y demostrarse de forma autocontenida en
+\breachlab~(inyección SQL, XSS, CSRF, fallos de autenticación, control de
+acceso roto y configuración de seguridad insegura); resultando en que el resto de 
+vulnerabilidades sean comentadas de forma anecdótica únicamente como líneas de trabajo 
+futuro (apartado~\ref{sec:trabajo-futuro}).
+
+Por otro lado, todas las puntuaciones CVSS v3.1 calculadas a lo largo de la memoria son
+ilustrativas de un escenario de laboratorio, con datos y usuarios ficticios y
+sin exposición a Internet, lo que implica que no constituyen una auditoría de un sistema 
+en producción y no deben interpretarse como tal. Del mismo modo, la comparativa
+del capítulo~\ref{cap:comparativa} con DVWA y OWASP Juice Shop se restringe a
+las vulnerabilidades tratadas en \breachlab, y no pretende ser una evaluación
+exhaustiva de esos dos proyectos.
+
+\needspace{15\baselineskip}
+\section{Estructura de la memoria}
+
+La memoria se organiza en los siguientes capítulos:
+
+\begin{itemize}
+\item El capítulo~\ref{cap:marco-teorico} recoge el estado del arte: el
+  catálogo OWASP Top~10, la OWASP Web Security Testing Guide y otras
+  metodologías de seguridad ofensiva, y el estándar CVSS v3.1 utilizado para
+  valorar la severidad de cada vulnerabilidad.
+\item El capítulo~\ref{cap:planificacion} recoge la planificación seguida
+  para desarrollar el trabajo, con sus fases y duración estimada.
+\item El capítulo~\ref{cap:diseno} describe el diseño y la arquitectura del
+  entorno de pruebas \breachlab.
+\item El capítulo~\ref{cap:metodologia} detalla la derivación de una
+  metodología propia y ágil a partir de la OWASP WSTG, así como el proceso
+  y las herramientas empleadas para aplicarla.
+\item El capítulo~\ref{cap:explotacion} constituye el núcleo técnico del
+  trabajo: la explotación y el análisis de impacto de cada una de las seis
+  vulnerabilidades introducidas en \breachlab, siguiendo la metodología
+  propia del capítulo~\ref{cap:metodologia}.
+\item El capítulo~\ref{cap:comparativa} compara la metodología propia con la
+  OWASP WSTG completa de la que parte, y compara además los resultados
+  obtenidos con dos laboratorios de referencia, DVWA y OWASP Juice Shop.
+\item El capítulo~\ref{cap:caso-estudio} presenta un caso de estudio que
+  encadena varias de las vulnerabilidades anteriores en un escenario de
+  ataque realista.
+\item El capítulo~\ref{cap:conclusiones} recoge las conclusiones del trabajo
+  y propone líneas de ampliación aplicables para futuras actualizaciones.
+\end{itemize}

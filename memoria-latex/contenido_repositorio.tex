@@ -1,0 +1,56 @@
+\chapter*{Contenido del repositorio}
+\addcontentsline{toc}{chapter}{Contenido del repositorio}
+\markboth{CONTENIDO DEL REPOSITORIO}{}
+
+Todo el código, el laboratorio \breachlab y esta memoria se encuentran
+disponibles en el repositorio público de GitHub: 
+\url{https://github.com/marina-prieto/tfm-marina-prieto}
+
+El repositorio del proyecto (\texttt{tfm-lab}) 
+sigue la siguiente estructura:
+
+\begin{itemize}
+\item \texttt{docker-compose.yml} — despliegue con \texttt{docker compose up
+  --build}.
+\item \texttt{csrf\_poc.html} — PoC de CSRF (capítulo~\ref{cap:explotacion},
+  apartado~\ref{sec:csrf}).
+\item \texttt{GUIA.md} — explotación paso a paso de las seis
+  vulnerabilidades.
+\item \texttt{CVSS.md} — razonamiento de cada vector CVSS v3.1.
+\item \texttt{backend/} — API Flask.
+  \begin{itemize}
+  \item \texttt{api.py} — las seis vulnerabilidades y el interruptor
+    \texttt{?safe=1}.
+  \item \texttt{requirements.txt}, \texttt{Dockerfile}.
+  \item \texttt{logs/attacks.log} — evidencia real, generada al reproducir
+    el capítulo~\ref{cap:explotacion}.
+  \end{itemize}
+\item \texttt{frontend/} — proyecto Astro.
+  \begin{itemize}
+  \item \texttt{astro.config.mjs}, \texttt{nginx.conf}, \texttt{Dockerfile},
+    \texttt{.dockerignore}.
+  \item \texttt{package.json}, \texttt{package-lock.json}.
+  \item \texttt{src/layouts/}, \texttt{src/lib/}, \texttt{src/styles/}.
+  \item \texttt{src/pages/} — login, dashboard, note, profile, admin.
+  \end{itemize}
+\item \texttt{memoria-latex/} — esta memoria.
+  \begin{itemize}
+  \item \texttt{main.tex}, \texttt{cap1\_introduccion.tex} a
+    \texttt{cap9\_conclusiones.tex}.
+  \item \texttt{resumen.tex}, \texttt{thanks.tex}, \texttt{bibliografia.tex},
+    \texttt{glosario.tex}, \texttt{contenido\_repositorio.tex},
+    \texttt{anexoA\_instalacion.tex}, \texttt{anexoB\_manual\_usuario.tex}.
+  \item \texttt{custom.sty}, \texttt{esi-tfm.cls}, \texttt{es-alpha.bst},
+    \texttt{atbeginend.sty} (dependencia de \texttt{esi-tfm.cls} no
+    disponible en CTAN/MiKTeX).
+  \item \texttt{metadata.tex}, \texttt{referencias.bib}.
+  \item \texttt{Makefile} — compila con \texttt{make} (usa
+    \texttt{latexmk}).
+  \item \texttt{figures/} — capturas reales usadas como evidencia.
+  \item \texttt{main.pdf} — memoria compilada.
+  \end{itemize}
+\end{itemize}
+
+\texttt{node\_modules/}, \texttt{dist/} y \texttt{.venv/} no se incluyen: se
+regeneran con \texttt{npm install} y \texttt{pip install -r requirements.txt}
+respectivamente (véase el anexo~\ref{anexo:instalacion}).

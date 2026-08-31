@@ -1,0 +1,29 @@
+\chapter*{Bibliografía}
+\addcontentsline{toc}{chapter}{Bibliografía}
+\markboth{BIBLIOGRAFÍA}{}
+
+\bibliographystylelib{es-alpha}
+\bibliographystylelink{es-alpha}
+
+% \bibliographylib/\bibliographylink (vía multibib) reutilizan la
+% "thebibliography" de la clase book, que por defecto abre un
+% \chapter*{...} nuevo por cada una. Como aquí queremos que
+% "Libros y artículos" y "Enlaces de Internet" sean secciones dentro de
+% este único capítulo "Bibliografía", degradamos \chapter a \section (y el
+% nivel de \addcontentsline que generan internamente) solo en este ámbito.
+\makeatletter
+\begingroup
+  \let\chapter\section
+  \def\@bib@chapterlvl{chapter}
+  \let\@bib@stdaddcontentsline\addcontentsline
+  \renewcommand{\addcontentsline}[3]{%
+    \def\@bib@lvl{#2}%
+    \ifx\@bib@lvl\@bib@chapterlvl
+      \@bib@stdaddcontentsline{#1}{section}{#3}%
+    \else
+      \@bib@stdaddcontentsline{#1}{#2}{#3}%
+    \fi}
+  \bibliographylib{referencias}
+  \bibliographylink{referencias}
+\endgroup
+\makeatother

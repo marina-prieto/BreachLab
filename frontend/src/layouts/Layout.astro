@@ -1,0 +1,60 @@
+---
+const { title = 'TFM Lab' } = Astro.props;
+import '../styles/global.css';
+---
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{title}</title>
+</head>
+<body>
+  <header class="topbar">
+    <div class="inner">
+      <span class="brand"><span class="dot"></span> BreachLab</span>
+      <nav>
+        <a data-nav href="/dashboard">Notas</a>
+        <a data-nav href="/profile">Perfil</a>
+        <a data-nav href="/admin">Admin</a>
+      </nav>
+      <span class="spacer"></span>
+      <span id="mode" class="badge vuln">MODO VULNERABLE</span>
+      <a data-nav id="logout" href="#" style="margin-left:.6rem">Salir</a>
+    </div>
+  </header>
+  <main>
+    <slot />
+  </main>
+
+  <script>
+    import { SAFE, SP, link, api, getMe } from '../lib/client.js';
+
+    // Badge de modo
+    const badge = document.getElementById('mode');
+    if (SAFE) { badge.textContent = 'MODO SEGURO'; badge.className = 'badge safe'; }
+
+    // Conserva ?safe=1 en los enlaces de navegacion
+    document.querySelectorAll('a[data-nav]').forEach((a) => {
+      const href = a.getAttribute('href');
+      if (href && href.startsWith('/')) a.setAttribute('href', href + SP);
+    });
+
+    // Sesion: muestra el usuario o "Entrar"
+    getMe().then(({ user }) => {
+      const lo = document.getElementById('logout');
+      if (user) {
+        lo.textContent = `Salir (${user.username} · ${user.role})`;
+        lo.addEventListener('click', async (e) => {
+          e.preventDefault();
+          await api('/logout', { method: 'POST' });
+          location.href = link('/');
+        });
+      } else {
+        lo.textContent = 'Entrar';
+        lo.setAttribute('href', link('/'));
+      }
+    });
+  </script>
+</body>
+</html>

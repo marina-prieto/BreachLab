@@ -1,0 +1,52 @@
+%% -- Personalización del estilo para esta memoria
+
+\usepackage{xspace}
+\usepackage{xurl} % permite partir URLs largas (bibliografía) al final de línea
+\usepackage{needspace} % \needspace{}: evita que una sección corta con lista
+                        % quede partida entre dos páginas (ver cap1)
+\usepackage{tikz}      % diagrama de arquitectura (cap3), en vez de imagen
+\usetikzlibrary{positioning, arrows.meta}
+\usepackage{pgfgantt}  % diagrama de Gantt de la planificación (cap. Planificación)
+\usepackage{float}    % posición [H]: fija una figura en su sitio del texto,
+                       % sin dejar que flote a otra página (ver anexo B)
+
+% -- Bibliografía en dos apartados (Libros y artículos / Enlaces de
+%    Internet), cada uno con sus propias \cite/\nocite/\bibliography, para
+%    poder usar \cite real (enlazable vía hyperref) sin perder la
+%    separación en dos listas. Ambas leen del mismo referencias.bib.
+\usepackage{multibib}
+\newcites{lib}{Libros y artículos}
+\newcites{link}{Enlaces de Internet}
+
+% Para desactivar la página de atribución automática a la clase esi-tfm
+% (que se añade sola al final del documento), descomenta la siguiente línea:
+% \renewcommand{\attributionArco}{}
+
+\def\breachlab{\emph{BreachLab}\xspace}
+
+% El paquete listings (usado por los entornos "listing"/"console" de
+% esi-tfm.cls) no entiende UTF-8 por defecto: un acento suelto dentro de
+% \begin{listing}/\begin{console} rompe la compilación. Esto lo arregla
+% para minúsculas/mayúsculas acentuadas y la eñe.
+\lstset{
+  extendedchars=true,
+  literate=%
+    {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'\i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1%
+    {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1%
+    {ñ}{{\~n}}1 {Ñ}{{\~N}}1 {¿}{{?`}}1 {¡}{{!`}}1%
+}
+
+% Caja de sustitución para una figura todavía no incorporada:
+% \figuraPendiente{<descripción a insertar>}{<texto del pie de figura>}
+\newcommand{\figuraPendiente}[2]{%
+  \begin{figure}[htbp]
+    \centering
+    \fbox{\begin{minipage}{0.85\textwidth}\centering
+      \vspace{2cm}
+      \textit{FIGURA PENDIENTE DE INSERTAR}\\[2mm]
+      \small #1
+      \vspace{2cm}
+    \end{minipage}}
+    \caption{#2}
+  \end{figure}%
+}

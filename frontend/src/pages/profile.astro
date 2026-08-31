@@ -1,0 +1,55 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+<Layout title="BreachLab · Perfil">
+  <h1>Perfil</h1>
+  <div class="grid">
+    <div class="card">
+      <h2>Cambiar contraseña <span class="badge vuln">VULNERABLE</span></h2>
+      <p class="hint">Acepta <code>GET</code> y no valida token CSRF (como el CSRF de DVWA).</p>
+      <label>Nueva contraseña</label>
+      <input id="nv" placeholder="nueva contraseña" />
+      <div style="margin-top:1rem"><button class="btn" id="chv">Cambiar (vulnerable)</button></div>
+      <div id="mv"></div>
+    </div>
+    <div class="card">
+      <h2>Cambiar contraseña <span class="badge safe">SEGURO</span></h2>
+      <p class="hint">Exige <code>POST</code> + token CSRF de la sesión.</p>
+      <label>Nueva contraseña</label>
+      <input id="ns" placeholder="nueva contraseña" />
+      <div style="margin-top:1rem"><button class="btn" id="chs">Cambiar (seguro)</button></div>
+      <div id="ms"></div>
+    </div>
+  </div>
+
+  <script>
+    import { api, requireLogin, getMe } from '../lib/client.js';
+
+    await requireLogin();
+    const { csrf } = await getMe();
+
+    // Vulnerable: GET sin token (forzable por CSRF).
+    document.getElementById('chv').addEventListener('click', async () => {
+      const nv = document.getElementById('nv').value;
+      const { data } = await api('/profile/password?new=' + encodeURIComponent(nv), { method: 'GET' });
+      const m = document.getElementById('mv');
+      m.className = 'msg ok';
+      m.textContent = data?.ok ? 'Contraseña cambiada (sin token).' : (data?.error || 'Error');
+    });
+
+    // Seguro: POST + token CSRF.
+    document.getElementById('chs').addEventListener('click', async () => {
+      const ns = document.getElementById('ns').value;
+      const res = await fetch('/api/profile/password?safe=1', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({ new: ns, csrf }),
+      });
+      const data = await res.json().catch(() => null);
+      const m = document.getElementById('ms');
+      m.className = res.ok ? 'msg ok' : 'msg err';
+      m.textContent = res.ok ? 'Contraseña cambiada de forma segura.' : (data?.error || 'Error');
+    });
+  </script>
+</Layout>
